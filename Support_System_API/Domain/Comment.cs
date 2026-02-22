@@ -1,0 +1,15 @@
+﻿
+namespace Support_System_API.Domain;
+
+public class Comment
+{
+    public Guid Id { get; set; }
+    public string Message { get; set; }
+    public DateTime CreatedAt { get; set; }
+    
+    public Guid TicketId { get; set; }
+    public Guid AuthorId { get; set; }
+    
+    public User Author { get; set; }
+    public Ticket Ticket { get; set; }
+}

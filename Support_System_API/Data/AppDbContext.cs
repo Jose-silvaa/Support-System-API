@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Support_System_API.Domain;
 
 namespace Support_System_API.Data;
 
@@ -8,4 +9,10 @@ public class AppDbContext : DbContext
     {
         
     }
+    
+    public DbSet<User> Users{ get; set; }
+    public DbSet<Comment> Comments { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<TicketHistory> TicketHistories { get; set; }
+
 }
