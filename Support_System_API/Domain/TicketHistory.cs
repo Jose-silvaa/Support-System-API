@@ -1,5 +1,4 @@
 ﻿using Support_System_API.Domain.Enums;
-using Support_System_API.Models;
 
 namespace Support_System_API.Domain;
 
