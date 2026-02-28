@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Support_System_API.Domain;
+using Support_System_API.Domain.Entities;
 
 namespace Support_System_API.Data;
 
