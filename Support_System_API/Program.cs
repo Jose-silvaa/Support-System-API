@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Support_System_API.Data;
-using Support_System_API.Domain;
+using Support_System_API.Domain.Entities;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Services.Auth;
 using Support_System_API.Services.Interfaces;

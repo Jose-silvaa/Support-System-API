@@ -18,7 +18,7 @@ public class TicketController : ControllerBase
         _ticketService = ticketService;
     }
     
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     [HttpPost("create")]
     public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto request)
     {
@@ -27,10 +27,25 @@ public class TicketController : ControllerBase
         return Created();
     }
     
-    [HttpGet("getAll")]
-    public async Task<IActionResult> GetAllTickets()
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetTickets()
     {
-        var tickets  = await _ticketService.ReadListTickets();
+        if (!User.Identity?.IsAuthenticated ?? true)
+            return Unauthorized();
+        
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        
+        if (userIdClaim is null || roleClaim is null)
+            return Unauthorized();
+        
+        if (!Guid.TryParse(userIdClaim.Value, out var userId))
+            return BadRequest("Invalid user identifier.");
+        
+        var role = roleClaim.Value;
+        
+        var tickets  = await _ticketService.GetTicketsAsync(userId, role);
 
         if (tickets.Count == 0)
             return NoContent();

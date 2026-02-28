@@ -8,5 +8,5 @@ public interface ITicketService
     Task CreateTicket(CreateTicketDto request, Guid userId);
     Task<bool> UpdatedTicket(UpdateTicketDto request,  Guid tickerId);
     Task<bool> DeletedTicket(Guid id);
-    Task<List<TicketListDto>> ReadListTickets();
+    Task<List<TicketListDto>> GetTicketsAsync(Guid userId, string role);
 }

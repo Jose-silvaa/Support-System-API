@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Support_System_API.Data;
+using DomainTicket = Support_System_API.Domain.Entities.Ticket;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos.Ticket;
 using Support_System_API.Services.Interfaces.Ticket;
@@ -20,7 +21,7 @@ public class TicketService : ITicketService
     
     public async Task CreateTicket(CreateTicketDto request, Guid userId)
     {
-        var ticket = new Domain.Ticket
+        var ticket = new DomainTicket
         {
             Id = Guid.NewGuid(),
             Title = request.Title,
@@ -67,15 +68,25 @@ public class TicketService : ITicketService
         return true;
     }
 
-    public async Task<List<TicketListDto>> ReadListTickets()
+    public async Task<List<TicketListDto>> GetTicketsAsync(Guid userId, string role)
     {
-        return await _context.Tickets
+        IQueryable<DomainTicket> query = _context.Tickets;
+
+        query = role switch
+        {
+            "Admin" => query,
+            "User" => query.Where(t => t.UserId == userId),
+            _ => query.Where(t => false)
+
+        };
+
+        return await query
             .Select(t => new TicketListDto
             {
                 Id = t.Id,
                 Title = t.Title,
                 Status = t.Status,
-                CreatedAt = t.CreatedAt,
+                CreatedAt = t.CreatedAt
             })
             .ToListAsync();
     }

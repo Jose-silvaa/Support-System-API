@@ -1,7 +1,7 @@
 ﻿using Support_System_API.Domain;
 using Support_System_API.Domain.Enums;
 
-namespace Support_System_API.Domain;
+namespace Support_System_API.Domain.Entities;
 
 public class Ticket
 {
