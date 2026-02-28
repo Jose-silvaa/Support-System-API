@@ -8,11 +8,14 @@ using Support_System_API.Domain;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Services.Auth;
 using Support_System_API.Services.Interfaces;
+using Support_System_API.Services.Interfaces.Ticket;
+using Support_System_API.Services.Ticket;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
