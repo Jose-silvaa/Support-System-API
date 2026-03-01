@@ -9,11 +9,14 @@ using Support_System_API.Domain.Enums;
 using Support_System_API.Services.Auth;
 using Support_System_API.Services.Interfaces;
 using Support_System_API.Services.Interfaces.Ticket;
+using Support_System_API.Services.Interfaces.TicketHistory;
 using Support_System_API.Services.Ticket;
+using Support_System_API.Services.TicketHistory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<ITicketHistoryService, TicketHistoryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddDbContext<AppDbContext>(options =>

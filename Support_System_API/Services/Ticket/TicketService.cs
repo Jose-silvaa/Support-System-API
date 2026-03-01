@@ -4,6 +4,7 @@ using DomainTicket = Support_System_API.Domain.Entities.Ticket;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos.Ticket;
 using Support_System_API.Services.Interfaces.Ticket;
+using Support_System_API.Services.Interfaces.TicketHistory;
 
 
 namespace Support_System_API.Services.Ticket;
@@ -12,11 +13,14 @@ public class TicketService : ITicketService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ITicketHistoryService _ticketHistoryService;
+
     
-    public TicketService(AppDbContext context, IConfiguration configuration)
+    public TicketService(AppDbContext context, IConfiguration configuration, ITicketHistoryService ticketHistoryService)
     {
         _context = context;
         _configuration = configuration;
+        _ticketHistoryService = ticketHistoryService;
     }
     
     public async Task CreateTicket(CreateTicketDto request, Guid userId)
@@ -35,7 +39,7 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> UpdatedTicket(UpdateTicketDto request, Guid ticketId)
+    public async Task<bool> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
@@ -50,7 +54,16 @@ public class TicketService : ITicketService
 
         if (request.Status.HasValue)
         {
+            var oldStatus = ticket.Status;
+            
             ticket.ChangeStatus(request.Status.Value);
+            
+            _ticketHistoryService.AddActivity(
+                ticket.Id,
+                $"Status changed from {oldStatus} to {request.Status.Value}",
+                TicketActivityType.StatusChanged,
+                userId
+            );
         }
         
         
