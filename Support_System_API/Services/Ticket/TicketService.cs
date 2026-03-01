@@ -47,6 +47,12 @@ public class TicketService : ITicketService
 
         if (!string.IsNullOrWhiteSpace(request.Description))
             ticket.Description = request.Description;
+
+        if (request.Status.HasValue)
+        {
+            ticket.ChangeStatus(request.Status.Value);
+        }
+        
         
         ticket.UpdatedAt = DateTime.UtcNow;
 
