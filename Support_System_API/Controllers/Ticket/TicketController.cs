@@ -53,10 +53,13 @@ public class TicketController : ControllerBase
         return Ok(tickets);
     }
     
+    [Authorize(Roles = "Admin, User")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTicket(UpdateTicketDto request, Guid id)
     {
-        var updated = await _ticketService.UpdatedTicket(request, id);
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        var updated = await _ticketService.UpdatedTicket(request, id, userId);
 
         if (!updated)
             return NotFound(new { message = "Ticket not found" });
