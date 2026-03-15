@@ -26,7 +26,7 @@ public class AuthService : IAuthService
         _passwordHasher = new PasswordHasher<User>();
     }
         
-    public async Task RegisterAsync(RegisterRequest request)
+    public async Task<string> RegisterAsync(RegisterRequest request)
     {
         var emailExists = await _context.Users
             .AnyAsync(u => u.Email == request.Email);
@@ -46,6 +46,8 @@ public class AuthService : IAuthService
         
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+        
+        return GenerateJwtToken(user);
     }
 
     public async Task<string> LoginAsync(LoginRequest request)

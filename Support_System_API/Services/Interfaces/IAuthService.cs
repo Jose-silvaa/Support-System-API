@@ -4,6 +4,6 @@ namespace Support_System_API.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task RegisterAsync(RegisterRequest request);
+    Task<string> RegisterAsync(RegisterRequest request);
     Task<string> LoginAsync(LoginRequest request);
 }
