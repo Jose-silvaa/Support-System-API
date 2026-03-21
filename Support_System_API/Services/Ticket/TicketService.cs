@@ -39,12 +39,12 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
+    public async Task<TicketResponseDto?> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
         if (ticket == null)
-            return false;
+            return null;
         
         if (!string.IsNullOrWhiteSpace(request.Title))
             ticket.Title = request.Title;
@@ -66,12 +66,19 @@ public class TicketService : ITicketService
             );
         }
         
-        
         ticket.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
         
-        return true;
+        return new TicketResponseDto
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            UserId = ticket.UserId,
+            UpdatedAt = ticket.UpdatedAt,
+            Status = ticket.Status,
+        };
     }
 
     public async Task<bool> DeletedTicket(Guid id)
@@ -104,6 +111,7 @@ public class TicketService : ITicketService
             {
                 Id = t.Id,
                 Title = t.Title,
+                Description = t.Description,
                 Status = t.Status,
                 CreatedAt = t.CreatedAt
             })

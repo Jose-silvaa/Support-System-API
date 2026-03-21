@@ -1,4 +1,5 @@
-﻿
+﻿using Support_System_API.Domain.Entities;
+
 
 namespace Support_System_API.Domain.Entities;
 

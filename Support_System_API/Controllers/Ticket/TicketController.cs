@@ -54,17 +54,17 @@ public class TicketController : ControllerBase
     }
     
     [Authorize(Roles = "Admin, User")]
-    [HttpPut("{id}")]
+    [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateTicket(UpdateTicketDto request, Guid id)
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         var updated = await _ticketService.UpdatedTicket(request, id, userId);
 
-        if (!updated)
+        if (updated == null)
             return NotFound(new { message = "Ticket not found" });
         
-        return Ok(new { message = "Ticket updated successfully" });
+        return Ok(updated);
     }
     
     [HttpDelete("{id}")]
