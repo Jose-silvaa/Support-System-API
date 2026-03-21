@@ -1,5 +1,6 @@
 ﻿using Support_System_API.Domain;
 using Support_System_API.Domain.Enums;
+using Support_System_API.Shared;
 
 namespace Support_System_API.Domain.Entities;
 
@@ -26,13 +27,21 @@ public class Ticket
             { TicketStatus.Closed, new() },
         };
 
-    public void ChangeStatus(TicketStatus newStatus)    
+    public Result ChangeStatus(TicketStatus newStatus)    
     {
-        if (!_allowedTransitions.TryGetValue(Status, out var allowed) 
+        if (!_allowedTransitions.TryGetValue(Status, out var allowed)
             || !allowed.Contains(newStatus))
-            throw new InvalidOperationException(
-                $"Invalid transition from {Status} to {newStatus}");
-
+        {
+            var allowedStatuses = allowed != null 
+                ? string.Join(", ", allowed) 
+                : "none";
+            
+            return Result.Fail(
+                $"You can't change the status from {Status} to {newStatus}.");
+        }
+        
         Status = newStatus;
+
+        return Result.Ok();
     }
 }
