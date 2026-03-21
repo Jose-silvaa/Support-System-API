@@ -5,6 +5,7 @@ using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos.Ticket;
 using Support_System_API.Services.Interfaces.Ticket;
 using Support_System_API.Services.Interfaces.TicketHistory;
+using Support_System_API.Shared;
 
 
 namespace Support_System_API.Services.Ticket;
@@ -23,7 +24,7 @@ public class TicketService : ITicketService
         _ticketHistoryService = ticketHistoryService;
     }
     
-    public async Task CreateTicket(CreateTicketDto request, Guid userId)
+    public async Task CreateTicket(CreateTicketDto request)
     {
         var ticket = new DomainTicket
         {
@@ -32,14 +33,15 @@ public class TicketService : ITicketService
             Description = request.Description,
             Status = TicketStatus.Open,
             CreatedAt = DateTime.UtcNow,
-            UserId = userId
+            UserId = request.UserId
+            
         };
         
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<TicketResponseDto?> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
+    public async Task<Result<TicketResponseDto>> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
@@ -56,7 +58,10 @@ public class TicketService : ITicketService
         {
             var oldStatus = ticket.Status;
             
-            ticket.ChangeStatus(request.Status.Value);
+            var result = ticket.ChangeStatus(request.Status.Value);
+            
+            if (!result.Success)
+                return Result<TicketResponseDto>.Fail(result.Message!);; 
             
             _ticketHistoryService.AddActivity(
                 ticket.Id,
@@ -70,7 +75,7 @@ public class TicketService : ITicketService
 
         await _context.SaveChangesAsync();
         
-        return new TicketResponseDto
+        var response = new TicketResponseDto
         {
             Id = ticket.Id,
             Title = ticket.Title,
@@ -79,6 +84,8 @@ public class TicketService : ITicketService
             UpdatedAt = ticket.UpdatedAt,
             Status = ticket.Status,
         };
+        
+        return Result<TicketResponseDto>.Ok(response);
     }
 
     public async Task<bool> DeletedTicket(Guid id)
@@ -113,7 +120,8 @@ public class TicketService : ITicketService
                 Title = t.Title,
                 Description = t.Description,
                 Status = t.Status,
-                CreatedAt = t.CreatedAt
+                CreatedAt = t.CreatedAt,
+                UserId = t.UserId
             })
             .ToListAsync();
     }

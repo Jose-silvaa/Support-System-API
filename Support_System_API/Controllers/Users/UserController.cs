@@ -7,7 +7,7 @@ using Support_System_API.Services.Interfaces.User;
 namespace Support_System_API.Controllers.Users;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -18,7 +18,7 @@ public class UserController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("assignable-users")]
+    [HttpGet("assignable")]
     public async Task<IActionResult> GetAssignableUsers()
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

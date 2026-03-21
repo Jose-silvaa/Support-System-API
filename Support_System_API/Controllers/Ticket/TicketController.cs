@@ -8,7 +8,7 @@ using Support_System_API.Services.Interfaces.Ticket;
 namespace Support_System_API.Controllers.Ticket;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class TicketController : ControllerBase
 {
     private readonly ITicketService _ticketService;
@@ -22,13 +22,12 @@ public class TicketController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto request)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        await _ticketService.CreateTicket(request, userId);
+        await _ticketService.CreateTicket(request);
         return Created();
     }
     
     [Authorize]
-    [HttpGet]
+    [HttpGet("getAllTickets")]
     public async Task<IActionResult> GetTickets()
     {
         if (!User.Identity?.IsAuthenticated ?? true)
