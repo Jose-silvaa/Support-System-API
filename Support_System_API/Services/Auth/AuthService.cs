@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Support_System_API.Data;
-using Support_System_API.Domain;
-using Support_System_API.Domain.Entities;
+using DomainUser = Support_System_API.Domain.Entities.User;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos;
 using Support_System_API.Services.Interfaces;
@@ -17,13 +16,13 @@ public class AuthService : IAuthService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
-    private readonly PasswordHasher<User> _passwordHasher;
+    private readonly PasswordHasher<DomainUser> _passwordHasher;
 
     public AuthService(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;
-        _passwordHasher = new PasswordHasher<User>();
+        _passwordHasher = new PasswordHasher<DomainUser>();
     }
         
     public async Task<string> RegisterAsync(RegisterRequest request)
@@ -34,7 +33,7 @@ public class AuthService : IAuthService
         if(emailExists)
             throw new Exception("Email already exists");
 
-        var user = new User
+        var user = new DomainUser
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
@@ -68,7 +67,7 @@ public class AuthService : IAuthService
     }
     
     
-    private string GenerateJwtToken(User user)
+    private string GenerateJwtToken(DomainUser user)
     {
         var claims = new[]
         {
