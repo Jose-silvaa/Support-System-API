@@ -15,6 +15,12 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
     
+    
+    /// <summary>
+    /// Create a new user
+    /// </summary>
+    /// <param name="request">User registration</param>
+    /// <returns>JWT token</returns>
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
@@ -22,6 +28,11 @@ public class AuthController : ControllerBase
         return Ok(token);
     }
 
+    /// <summary>
+    /// Login to the System
+    /// </summary>
+    /// <param name="request">User login credentials</param>
+    /// <returns>JWT token</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
