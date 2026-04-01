@@ -18,6 +18,26 @@ public class TicketController : ControllerBase
         _ticketService = ticketService;
     }
     
+    /// <summary>
+    /// Create a new ticket
+    /// </summary>
+    /// <param name="request">Ticket creation data</param>
+    /// <returns>The newly created ticket</returns>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     POST /tickets
+    ///     {
+    ///        "title": "Login not working",
+    ///        "description": "User cannot log into the system",
+    ///        "priority": "High"
+    ///     }
+    ///
+    /// Requires authentication via Bearer token.
+    /// </remarks>
+    /// <response code="201">Ticket created successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized</response>
     [Authorize(Roles = "User,Admin")]
     [HttpPost("create")]
     public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto request)
@@ -26,13 +46,21 @@ public class TicketController : ControllerBase
         return Created();
     }
     
+    /// <summary>
+    /// Get all tickets for the authenticated user
+    /// </summary>
+    /// <returns>List of tickets</returns>
+    /// <remarks>
+    /// Requires authentication via Bearer token.
+    /// </remarks>
+    /// <response code="200">Returns a list of tickets (can be empty)</response>
+    /// <response code="401">Unauthorized</response>
     [Authorize]
     [HttpGet("getAllTickets")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTickets()
     {
-        if (!User.Identity?.IsAuthenticated ?? true)
-            return Unauthorized();
-        
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         var roleClaim = User.FindFirst(ClaimTypes.Role);
         
@@ -46,12 +74,23 @@ public class TicketController : ControllerBase
         
         var tickets  = await _ticketService.GetTicketsAsync(userId, role);
 
-        if (tickets.Count == 0)
-            return NoContent();
-
         return Ok(tickets);
     }
     
+    /// <summary>
+    /// Update an existing ticket
+    /// </summary>
+    /// <param name="id">Ticket identifier</param>
+    /// <param name="request">Ticket data to update</param>
+    /// <returns>Updated ticket</returns>
+    /// <remarks>
+    /// Requires authentication via Bearer token.
+    /// Only the ticket owner or an admin can update it.
+    /// </remarks>
+    /// <response code="200">Ticket updated successfully</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Ticket not found</response>
     [Authorize(Roles = "Admin, User")]
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateTicket(UpdateTicketDto request, Guid id)
@@ -60,12 +99,24 @@ public class TicketController : ControllerBase
 
         var updated = await _ticketService.UpdatedTicket(request, id, userId);
 
-        if (updated == null)
+        if (updated is null)
             return NotFound(new { message = "Ticket not found" });
         
         return Ok(updated);
     }
     
+    /// <summary>
+    /// Delete a ticket
+    /// </summary>
+    /// <param name="id">Ticket identifier</param>
+    /// <remarks>
+    /// Requires authentication via Bearer token.
+    /// Only the ticket owner or an admin can delete it.
+    /// </remarks>
+    /// <response code="204">Ticket deleted successfully</response>
+    /// <response code="401">Unauthorized</response>
+    /// <response code="404">Ticket not found</response>
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTicket(Guid id)
     {
