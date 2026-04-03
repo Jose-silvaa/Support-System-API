@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Support_System_API.Dtos.Ticket;
 using Support_System_API.Services.Interfaces;
 using Support_System_API.Services.Interfaces.Ticket;
+using Support_System_API.Services.Interfaces.User;
 
 namespace Support_System_API.Controllers.Ticket;
 
@@ -12,10 +13,12 @@ namespace Support_System_API.Controllers.Ticket;
 public class TicketController : ControllerBase
 {
     private readonly ITicketService _ticketService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public TicketController(ITicketService ticketService)
+    public TicketController(ITicketService ticketService, ICurrentUserService currentUserService)
     {
         _ticketService = ticketService;
+        _currentUserService = currentUserService;
     }
     
     /// <summary>
@@ -29,8 +32,7 @@ public class TicketController : ControllerBase
     ///     POST /tickets
     ///     {
     ///        "title": "Login not working",
-    ///        "description": "User cannot log into the system",
-    ///        "priority": "High"
+    ///        "description": "User cannot log into the system"
     ///     }
     ///
     /// Requires authentication via Bearer token.
@@ -42,7 +44,7 @@ public class TicketController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreateTicket([FromBody] CreateTicketDto request)
     {
-        await _ticketService.CreateTicket(request);
+        await _ticketService.CreateTicket(request, _currentUserService.UserId);
         return Created();
     }
     
@@ -61,18 +63,9 @@ public class TicketController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTickets()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
-        
-        if (userIdClaim is null || roleClaim is null)
-            return Unauthorized();
-        
-        if (!Guid.TryParse(userIdClaim.Value, out var userId))
-            return BadRequest("Invalid user identifier.");
-        
-        var role = roleClaim.Value;
-        
-        var tickets  = await _ticketService.GetTicketsAsync(userId, role);
+        var tickets  = await _ticketService.GetTicketsAsync(
+            _currentUserService.UserId, _currentUserService.Role
+            );
 
         return Ok(tickets);
     }
@@ -86,6 +79,11 @@ public class TicketController : ControllerBase
     /// <remarks>
     /// Requires authentication via Bearer token.
     /// Only the ticket owner or an admin can update it.
+    ///
+    /// **Status values (string → numeric):**
+    /// "Open" → 1
+    /// "InProgress" → 2
+    /// "Closed" → 3
     /// </remarks>
     /// <response code="200">Ticket updated successfully</response>
     /// <response code="400">Invalid request data</response>
@@ -95,14 +93,18 @@ public class TicketController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateTicket(UpdateTicketDto request, Guid id)
     {
-        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await _ticketService.UpdatedTicket(request, id, _currentUserService.UserId);
 
-        var updated = await _ticketService.UpdatedTicket(request, id, userId);
-
-        if (updated is null)
-            return NotFound(new { message = "Ticket not found" });
+        if (!result.Success)
+        {
+            return result.Message switch
+            {
+                "Ticket not found" => NotFound(new { message = result.Message }),
+                _ => BadRequest(new { message = result.Message })
+            };
+        }
         
-        return Ok(updated);
+        return Ok(result.Data);
     }
     
     /// <summary>

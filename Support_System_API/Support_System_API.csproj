@@ -27,10 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Services\Interfaces\User\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>

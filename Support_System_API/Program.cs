@@ -49,11 +49,13 @@ builder.Services.AddSwaggerGen(options =>
     
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITicketHistoryService, TicketHistoryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
