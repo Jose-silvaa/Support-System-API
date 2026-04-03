@@ -24,7 +24,7 @@ public class TicketService : ITicketService
         _ticketHistoryService = ticketHistoryService;
     }
     
-    public async Task CreateTicket(CreateTicketDto request)
+    public async Task CreateTicket(CreateTicketDto request, Guid userId)
     {
         var ticket = new DomainTicket
         {
@@ -33,9 +33,12 @@ public class TicketService : ITicketService
             Description = request.Description,
             Status = TicketStatus.Open,
             CreatedAt = DateTime.UtcNow,
-            UserId = request.UserId
+            UserId = userId,
             
         };
+        
+        if (!_context.Users.Any(u => u.Id == ticket.UserId))
+            throw new Exception("Invalid user id");
         
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
@@ -46,7 +49,7 @@ public class TicketService : ITicketService
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
         if (ticket == null)
-            return null;
+            return Result<TicketResponseDto>.Fail("Ticket not found");
         
         if (!string.IsNullOrWhiteSpace(request.Title))
             ticket.Title = request.Title;
@@ -74,8 +77,8 @@ public class TicketService : ITicketService
         ticket.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
-        
-        var response = new TicketResponseDto
+
+        return Result<TicketResponseDto>.Ok(new TicketResponseDto
         {
             Id = ticket.Id,
             Title = ticket.Title,
@@ -83,9 +86,7 @@ public class TicketService : ITicketService
             UserId = ticket.UserId,
             UpdatedAt = ticket.UpdatedAt,
             Status = ticket.Status,
-        };
-        
-        return Result<TicketResponseDto>.Ok(response);
+        });
     }
 
     public async Task<bool> DeletedTicket(Guid id)
