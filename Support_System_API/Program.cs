@@ -84,7 +84,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins("http://localhost:5173", "https://support-system-frontend-delta.vercel.app")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
