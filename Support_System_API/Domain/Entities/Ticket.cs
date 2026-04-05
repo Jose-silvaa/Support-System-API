@@ -1,5 +1,6 @@
 ﻿using Support_System_API.Domain;
 using Support_System_API.Domain.Enums;
+using Support_System_API.Dtos.Ticket;
 using Support_System_API.Shared;
 
 namespace Support_System_API.Domain.Entities;
@@ -17,31 +18,38 @@ public class Ticket
     public User User { get; set; }
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<TicketHistory> Histories { get; set; } = new List<TicketHistory>();
-
-
-    private static readonly Dictionary<TicketStatus, List<TicketStatus>> _allowedTransitions =
-        new()
-        {
-            { TicketStatus.Open, new() { TicketStatus.InProgress } },
-            { TicketStatus.InProgress, new() { TicketStatus.Closed} },
-            { TicketStatus.Closed, new() },
-        };
-
-    public Result ChangeStatus(TicketStatus newStatus)    
+    
+    public (Result result, string? activity) UpdateDetails(string? title, string? description, Ticket ticket, Guid userId, string role)
     {
-        if (!_allowedTransitions.TryGetValue(Status, out var allowed)
-            || !allowed.Contains(newStatus))
-        {
-            var allowedStatuses = allowed != null 
-                ? string.Join(", ", allowed) 
-                : "none";
-            
-            return Result.Fail(
-                $"You can't change the status from {Status} to {newStatus}.");
-        }
+        if (ticket.UserId != userId && role != "Admin")
+            return (Result.Fail("You must be a system administrator to perform this action"), null);
         
-        Status = newStatus;
+        if (!string.IsNullOrWhiteSpace(title))
+            Title = title;
 
-        return Result.Ok();
+        if (!string.IsNullOrWhiteSpace(description))
+            Description = description;
+        
+        var activity = $"Ticket updated successfully";
+
+        return (Result.Ok(), activity);
+
+    }
+    
+    public (Result result, string? activity) UpdateStatus(TicketStatus status, string role)
+    {
+        if (Status == status)
+            return (Result.Fail("Status is already the same"), null);
+
+        if (role != "Admin")
+            return (Result.Fail("You must be a system administrator to perform this action"), null);
+            
+        var oldStatus = Status;
+        Status = status;
+        
+        var activity = $"Status changed from {oldStatus} to {Status}";
+        
+        return (Result.Ok(), activity);
+        
     }
 }

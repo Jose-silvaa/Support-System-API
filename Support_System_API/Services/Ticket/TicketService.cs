@@ -5,6 +5,7 @@ using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos.Ticket;
 using Support_System_API.Services.Interfaces.Ticket;
 using Support_System_API.Services.Interfaces.TicketHistory;
+using Support_System_API.Services.Interfaces.User;
 using Support_System_API.Shared;
 
 
@@ -15,13 +16,14 @@ public class TicketService : ITicketService
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly ITicketHistoryService _ticketHistoryService;
-
+    private readonly ICurrentUserService _currentUserService;
     
-    public TicketService(AppDbContext context, IConfiguration configuration, ITicketHistoryService ticketHistoryService)
+    public TicketService(AppDbContext context, IConfiguration configuration, ITicketHistoryService ticketHistoryService, ICurrentUserService currentUserService)
     {
         _context = context;
         _configuration = configuration;
         _ticketHistoryService = ticketHistoryService;
+        _currentUserService = currentUserService;
     }
     
     public async Task CreateTicket(CreateTicketDto request, Guid userId)
@@ -44,38 +46,37 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Result<TicketResponseDto>> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId)
+    public async Task<Result<TicketResponseDto>> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId, String role)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
         if (ticket == null)
             return Result<TicketResponseDto>.Fail("Ticket not found");
         
-        if (!string.IsNullOrWhiteSpace(request.Title))
-            ticket.Title = request.Title;
-
-        if (!string.IsNullOrWhiteSpace(request.Description))
-            ticket.Description = request.Description;
-
-        if (request.Status.HasValue)
+        var oldStatus = ticket.Status;
+        
+        if (request.Status != ticket.Status)
         {
-            var oldStatus = ticket.Status;
-            
-            var result = ticket.ChangeStatus(request.Status.Value);
+            var (result, activity) = ticket.UpdateStatus(request.Status, _currentUserService.Role);
             
             if (!result.Success)
-                return Result<TicketResponseDto>.Fail(result.Message!);; 
+                return Result<TicketResponseDto>.Fail(result.Message);
+        
+            if (activity != null)
+            {
+                _ticketHistoryService.AddActivity(
+                    ticket.Id,
+                    $"Status changed from {oldStatus} to {ticket.Status}",
+                    TicketActivityType.StatusChanged,
+                    userId
+                );
             
-            _ticketHistoryService.AddActivity(
-                ticket.Id,
-                $"Status changed from {oldStatus} to {request.Status.Value}",
-                TicketActivityType.StatusChanged,
-                userId
-            );
+                ticket.UpdatedAt = DateTime.UtcNow;
+            }
         }
         
-        ticket.UpdatedAt = DateTime.UtcNow;
-
+        ticket.UpdateDetails(request.Title, request.Description, ticket, userId, _currentUserService.Role);
+        
         await _context.SaveChangesAsync();
 
         return Result<TicketResponseDto>.Ok(new TicketResponseDto
@@ -105,14 +106,6 @@ public class TicketService : ITicketService
     public async Task<List<TicketListDto>> GetTicketsAsync(Guid userId, string role)
     {
         IQueryable<DomainTicket> query = _context.Tickets;
-
-        query = role switch
-        {
-            "Admin" => query,
-            "User" => query.Where(t => t.UserId == userId),
-            _ => query.Where(t => false)
-
-        };
 
         return await query
             .Select(t => new TicketListDto

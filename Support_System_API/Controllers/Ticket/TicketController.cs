@@ -93,7 +93,7 @@ public class TicketController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> UpdateTicket(UpdateTicketDto request, Guid id)
     {
-        var result = await _ticketService.UpdatedTicket(request, id, _currentUserService.UserId);
+        var result = await _ticketService.UpdatedTicket(request, id, _currentUserService.UserId, _currentUserService.Role);
 
         if (!result.Success)
         {
