@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Support_System_API.Data;
 using DomainTicket = Support_System_API.Domain.Entities.Ticket;
 using Support_System_API.Domain.Enums;
@@ -14,16 +15,16 @@ namespace Support_System_API.Services.Ticket;
 public class TicketService : ITicketService
 {
     private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
     private readonly ITicketHistoryService _ticketHistoryService;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IMemoryCache _memoryCache;
     
-    public TicketService(AppDbContext context, IConfiguration configuration, ITicketHistoryService ticketHistoryService, ICurrentUserService currentUserService)
+    public TicketService(AppDbContext context, ITicketHistoryService ticketHistoryService, ICurrentUserService currentUserService, IMemoryCache memoryCache)
     {
         _context = context;
-        _configuration = configuration;
         _ticketHistoryService = ticketHistoryService;
         _currentUserService = currentUserService;
+        _memoryCache = memoryCache;
     }
     
     public async Task CreateTicket(CreateTicketDto request, Guid userId)
@@ -105,18 +106,34 @@ public class TicketService : ITicketService
 
     public async Task<List<TicketListDto>> GetTicketsAsync(Guid userId, string role)
     {
-        IQueryable<DomainTicket> query = _context.Tickets;
+        List<TicketListDto> tickets;
 
-        return await query
-            .Select(t => new TicketListDto
-            {
-                Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
-                Status = t.Status,
-                CreatedAt = t.CreatedAt,
-                UserId = t.UserId
-            })
-            .ToListAsync();
+        var cacheKey = $"tickets_{userId}_{role}";
+
+        if (!_memoryCache.TryGetValue(cacheKey, out tickets))
+        {
+            Console.WriteLine("❌ Buscando do BANCO");
+
+            IQueryable<DomainTicket> query = _context.Tickets;
+
+            tickets = await query
+                .Select(t => new TicketListDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Description = t.Description,
+                    Status = t.Status,
+                    CreatedAt = t.CreatedAt,
+                    UserId = t.UserId
+                })
+                .ToListAsync();      
+
+            _memoryCache.Set(cacheKey, tickets, TimeSpan.FromMinutes(5));
+        }
+        else
+        {
+            Console.WriteLine("✅ Vindo do CACHE");
+        }
+        return tickets;
     }
 }
