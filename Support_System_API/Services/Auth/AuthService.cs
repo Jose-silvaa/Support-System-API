@@ -17,9 +17,11 @@ public class AuthService : IAuthService
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly PasswordHasher<DomainUser> _passwordHasher;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(AppDbContext context, IConfiguration configuration)
+    public AuthService(AppDbContext context, IConfiguration configuration, ILogger<AuthService> logger)
     {
+        _logger = logger;
         _context = context;
         _configuration = configuration;
         _passwordHasher = new PasswordHasher<DomainUser>();
@@ -27,11 +29,16 @@ public class AuthService : IAuthService
         
     public async Task<string> RegisterAsync(RegisterRequest request)
     {
+        _logger.LogInformation("Starting user registration for email: {Email}", request.Email);
+
         var emailExists = await _context.Users
             .AnyAsync(u => u.Email == request.Email);
-        
-        if(emailExists)
+
+        if (emailExists)
+        {
+            _logger.LogWarning("Registration failed: Email already exists - {Email}", request.Email);
             throw new Exception("Email already exists");
+        }
 
         var user = new DomainUser
         {
@@ -46,22 +53,34 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         
+        _logger.LogInformation("Creating user object for email: {Email}", request.Email);
+        
         return GenerateJwtToken(user);
     }
 
     public async Task<string> LoginAsync(LoginRequest request)
     {
+        _logger.LogInformation("Login attempt for email: {Email}", request.Email);
+
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == request.Email);
-        
-        if(user == null)
+
+        if (user == null)
+        {
+            _logger.LogWarning("Login failed: user not found for email: {Email}", request.Email);
             throw new Exception("Invalid credentials");
+        }
         
         var result = _passwordHasher
             .VerifyHashedPassword(user, user.PasswordHash, request.Password);
-        
+
         if (result == PasswordVerificationResult.Failed)
+        {
+            _logger.LogWarning("Login failed: invalid password for userId: {UserId}", user.Id);
             throw new Exception("Invalid credentials");
+        }
+        
+        _logger.LogInformation("Login successful for userId: {UserId}", user.Id);
         
         return GenerateJwtToken(user);
     }

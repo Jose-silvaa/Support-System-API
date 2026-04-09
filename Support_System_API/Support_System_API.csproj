@@ -23,6 +23,9 @@
       <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
       <PackageReference Include="Scalar.AspNetCore" Version="2.13.17" />
+      <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
       <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.7" />
     </ItemGroup>

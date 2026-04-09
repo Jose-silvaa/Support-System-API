@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Serilog;
 using Support_System_API.Data;
 using Support_System_API.Domain.Entities;
 using Support_System_API.Domain.Enums;
+using Support_System_API.Infrastructure.Logging;
 using Support_System_API.Services.Auth;
 using Support_System_API.Services.Interfaces;
 using Support_System_API.Services.Interfaces.Ticket;
@@ -17,8 +19,13 @@ using Support_System_API.Services.Ticket;
 using Support_System_API.Services.TicketHistory;
 using Support_System_API.Services.User;
 
+LoggingConfiguration.Configure();
+
+Log.Information("Starting application");
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
