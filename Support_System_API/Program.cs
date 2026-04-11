@@ -1,5 +1,7 @@
 using System.Reflection;
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,8 @@ using Support_System_API.Services.Interfaces.User;
 using Support_System_API.Services.Ticket;
 using Support_System_API.Services.TicketHistory;
 using Support_System_API.Services.User;
+using Support_System_API.Validators.Ticket;
+using Support_System_API.Validators.User;
 
 LoggingConfiguration.Configure();
 
@@ -56,6 +60,10 @@ builder.Services.AddSwaggerGen(options =>
     
 });
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginUserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTicketValidator>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITicketHistoryService, TicketHistoryService>();

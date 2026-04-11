@@ -1,6 +1,6 @@
-﻿namespace Support_System_API.Dtos;
+﻿namespace Support_System_API.Dtos.Auth;
 
-public class LoginRequest
+public class LoginDto
 {
     public string Email { get; set; }
     public string Password { get; set; }    

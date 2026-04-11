@@ -8,6 +8,7 @@ using Support_System_API.Data;
 using DomainUser = Support_System_API.Domain.Entities.User;
 using Support_System_API.Domain.Enums;
 using Support_System_API.Dtos;
+using Support_System_API.Dtos.Auth;
 using Support_System_API.Services.Interfaces;
 
 namespace Support_System_API.Services.Auth;
@@ -27,52 +28,52 @@ public class AuthService : IAuthService
         _passwordHasher = new PasswordHasher<DomainUser>();
     }
         
-    public async Task<string> RegisterAsync(RegisterRequest request)
+    public async Task<string> RegisterAsync(RegisterDto dto)
     {
-        _logger.LogInformation("Starting user registration for email: {Email}", request.Email);
+        _logger.LogInformation("Starting user registration for email: {Email}", dto.Email);
 
         var emailExists = await _context.Users
-            .AnyAsync(u => u.Email == request.Email);
+            .AnyAsync(u => u.Email == dto.Email);
 
         if (emailExists)
         {
-            _logger.LogWarning("Registration failed: Email already exists - {Email}", request.Email);
+            _logger.LogWarning("Registration failed: Email already exists - {Email}", dto.Email);
             throw new Exception("Email already exists");
         }
 
         var user = new DomainUser
         {
             Id = Guid.NewGuid(),
-            Email = request.Email,
+            Email = dto.Email,
             Role = UserRole.User
         };
         
         user.PasswordHash = _passwordHasher
-            .HashPassword(user, request.Password);
+            .HashPassword(user, dto.Password);
         
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         
-        _logger.LogInformation("Creating user object for email: {Email}", request.Email);
+        _logger.LogInformation("Creating user object for email: {Email}", dto.Email);
         
         return GenerateJwtToken(user);
     }
 
-    public async Task<string> LoginAsync(LoginRequest request)
+    public async Task<string> LoginAsync(LoginDto dto)
     {
-        _logger.LogInformation("Login attempt for email: {Email}", request.Email);
+        _logger.LogInformation("Login attempt for email: {Email}", dto.Email);
 
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email);
+            .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
         {
-            _logger.LogWarning("Login failed: user not found for email: {Email}", request.Email);
+            _logger.LogWarning("Login failed: user not found for email: {Email}", dto.Email);
             throw new Exception("Invalid credentials");
         }
         
         var result = _passwordHasher
-            .VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            .VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
         if (result == PasswordVerificationResult.Failed)
         {
