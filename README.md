@@ -1,51 +1,81 @@
-### Support System API
+## Support System API
 
-📌 Description
+A RESTful API built with ASP.NET Core for managing support tickets.
 
-Support System API is a RESTful backend application built with ASP.NET Core.
-It allows users to create, update, and manage support tickets based on their roles.
+The system allows users to create, update, and track tickets based on role-based access control (RBAC), ensuring proper authorization and workflow management.
 
-The project follows clean architecture principles and uses Entity Framework Core for data persistence.
+## Frontend
 
-🚀 Tech Stack
+Repository : https://github.com/Jose-silvaa/Support-System-Frontend
 
-ASP.NET Core
+Live : https://support-system-frontend-delta.vercel.app
 
-Entity Framework Core
+## API Documentation (Swagger)
 
-SQL Server
+Live : https://system-ticket-1-0.onrender.com/index.html
 
-JWT Authentication
+## Tech Stack
 
-📂 Project Structure
+**Backend**
+- ASP.NET Core
+- Entity Framework Core
 
-Domain → Entities and Enums
+**Database**
+- SQL Server
 
-Data → DbContext and database configuration
+**Authentication**
+- JWT (JSON Web Tokens)
 
-Services → Business logic
+**DevOps**
+- Docker
+  
+## How to Run the Project
 
-DTOs → Data Transfer Objects
+### Configuration
 
-Controllers → API endpoints
+Update the `appsettings.json` file with your database connection string:
 
-✨ Features
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "your_connection_string_here"
+}
+````
 
-Create tickets
+### Steps
 
-Update tickets
+1. Clone the repository
+```bash
+git clone https://github.com/Jose-silvaa/Support-System-API.git
+````
 
-Delete tickets
+2. Navigate to the project folder
+```bash
+cd Support-System-API      
+````
 
-Role-based ticket filtering
+3. Restore dependencies
+```bash
+dotnet restore
+````
 
-User authentication (JWT)
+4. Run the application
+```bash
+dotnet run
+````
 
-Status management (Open, Closed, etc.)
+## Features
 
-🔐 Authentication
+- User authentication with JWT
+- Role-based authorization
+- Ticket creation and management
+- Status updates (Open, In Progress, Closed)
+- Logging and validation
 
-This API uses JWT (JSON Web Token) authentication.
-Users must provide a valid token in the Authorization header:
+## Running with Docker
 
-Authorization: Bearer your_token_here
+### Pull the image
+
+```bash
+docker pull vitor590/system-ticket:1.3.0
+````
+
