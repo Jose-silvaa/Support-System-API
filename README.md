@@ -12,7 +12,7 @@ Live : https://support-system-frontend-delta.vercel.app
 
 ## API Documentation (Swagger)
 
-Live : https://system-ticket-1-0.onrender.com/index.html
+Live : https://system-ticket-production.up.railway.app/index.html
 
 ## Tech Stack
 
@@ -76,6 +76,6 @@ dotnet run
 ### Pull the image
 
 ```bash
-docker pull vitor590/system-ticket:1.3.0
+docker pull vitor590/system-ticket:1.4.0
 ````
 
