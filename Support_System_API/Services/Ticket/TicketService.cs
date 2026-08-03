@@ -46,12 +46,12 @@ public class TicketService : ITicketService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Result<TicketResponseDto>> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId, String role)
+    public async Task<OperationResult<TicketResponseDto>> UpdatedTicket(UpdateTicketDto request, Guid ticketId, Guid userId, String role)
     {
         var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
 
         if (ticket == null)
-            return Result<TicketResponseDto>.Fail("Ticket not found");
+            return OperationResult<TicketResponseDto>.Fail("Ticket not found");
         
         var oldStatus = ticket.Status;
         
@@ -60,7 +60,7 @@ public class TicketService : ITicketService
             var (result, activity) = ticket.UpdateStatus(request.Status, _currentUserService.Role);
             
             if (!result.Success)
-                return Result<TicketResponseDto>.Fail(result.Message);
+                return OperationResult<TicketResponseDto>.Fail(result.Message);
         
             if (activity != null)
             {
@@ -79,7 +79,7 @@ public class TicketService : ITicketService
         
         await _context.SaveChangesAsync();
 
-        return Result<TicketResponseDto>.Ok(new TicketResponseDto
+        return OperationResult<TicketResponseDto>.Ok(new TicketResponseDto
         {
             Id = ticket.Id,
             Title = ticket.Title,

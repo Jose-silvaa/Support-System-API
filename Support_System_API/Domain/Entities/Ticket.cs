@@ -19,6 +19,7 @@ public class Ticket
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<TicketHistory> Histories { get; set; } = new List<TicketHistory>();
     
+    [GraphQLIgnore]
     public (Result result, string? activity) UpdateDetails(string? title, string? description, Ticket ticket, Guid userId, string role)
     {
         if (ticket.UserId != userId && role != "Admin")
@@ -36,6 +37,7 @@ public class Ticket
 
     }
     
+    [GraphQLIgnore]
     public (Result result, string? activity) UpdateStatus(TicketStatus status, string role)
     {
         if (Status == status)

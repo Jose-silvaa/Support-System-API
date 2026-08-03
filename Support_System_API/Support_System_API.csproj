@@ -11,6 +11,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="HotChocolate.AspNetCore" Version="16.5.0" />
+      <PackageReference Include="HotChocolate.Data" Version="16.5.0" />
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
         <PrivateAssets>all</PrivateAssets>

@@ -1,4 +1,5 @@
 using System.Reflection;
+using IOPath = System.IO.Path;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,7 @@ using Microsoft.OpenApi;
 using Support_System_API.Data;
 using Support_System_API.Domain.Entities;
 using Support_System_API.Domain.Enums;
+using Support_System_API.GraphQL;
 using Support_System_API.Services.Auth;
 using Support_System_API.Services.Interfaces;
 using Support_System_API.Services.Interfaces.Ticket;
@@ -19,6 +21,13 @@ using Support_System_API.Services.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>()
+    .AddProjections()
+    .AddFiltering()
+    .AddSorting();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -45,7 +54,7 @@ builder.Services.AddSwaggerGen(options =>
     });
     
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    options.IncludeXmlComments(IOPath.Combine(AppContext.BaseDirectory, xmlFilename));
     
 });
 
@@ -135,5 +144,6 @@ app.UseAuthorization();
 app.UseCors("AllowFrontend");
 
 app.MapControllers();
+app.MapGraphQL();
 
 app.Run();
