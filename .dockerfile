@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -11,7 +11,7 @@ COPY ["Support_System_API/Support_System_API.csproj", "Support_System_API/"]
 RUN dotnet restore "./Support_System_API/Support_System_API.csproj"
 COPY . .
 WORKDIR "/src/Support_System_API"
-RUN dotnet build "Support_System_API.csproj" -c $BUILD_CONFIGURATION -o /app/build  
+RUN dotnet build "Support_System_API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
