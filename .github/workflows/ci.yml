@@ -45,5 +45,5 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Support_System_API/Dockerfile
+          file: .dockerfile
           push: false
