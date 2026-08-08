@@ -54,6 +54,8 @@ public class TicketService : ITicketService
             return Result<TicketResponseDto>.Fail("Ticket not found");
         
         var oldStatus = ticket.Status;
+        var oldDescription = ticket.Description;
+        var oldTitle = ticket.Title;
         
         if (request.Status != ticket.Status)
         {
@@ -74,6 +76,25 @@ public class TicketService : ITicketService
                 ticket.UpdatedAt = DateTime.UtcNow;
             }
         }
+
+        if (request.Description != ticket.Description)
+        {
+            _ticketHistoryService.AddActivity(
+                ticket.Id,
+                $"Description changed from {oldDescription} to {request.Description}",
+                TicketActivityType.DescriptionChanged,
+                userId);
+        }
+
+        if (request.Title != ticket.Title)
+        {
+            _ticketHistoryService.AddActivity(
+                ticket.Id,
+                $"Title changed from {oldTitle} to {request.Title}",
+                TicketActivityType.TitleChanged, 
+                userId);
+        }
+        
         
         ticket.UpdateDetails(request.Title, request.Description, ticket, userId, _currentUserService.Role);
         

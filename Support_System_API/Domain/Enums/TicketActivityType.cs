@@ -5,6 +5,6 @@ public enum TicketActivityType
     StatusChanged,
     CommentAdded,
     CommentEdited,
-    AssignedUserChanged,
-    PriorityChanged
+    DescriptionChanged,
+    TitleChanged,
 }
