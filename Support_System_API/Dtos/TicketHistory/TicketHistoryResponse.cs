@@ -2,6 +2,6 @@
 
 namespace Support_System_API.Dtos.TicketHistory;
 
-public record TicketHistoryResponse(Guid TicketId, Guid UserId, TicketActivityType Type, string? Description);
+public record TicketHistoryResponse(string Email, Guid TicketId, Guid UserId, TicketActivityType Type, object? OldValue, object? NewValue, DateTime CreatedAt);
     
     
