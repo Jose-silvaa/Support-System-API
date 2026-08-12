@@ -68,7 +68,8 @@ public class TicketService : ITicketService
             {
                 _ticketHistoryService.AddActivity(
                     ticket.Id,
-                    $"Status changed from {oldStatus} to {ticket.Status}",
+                    oldStatus.ToString(),
+                    ticket.Status.ToString(),
                     TicketActivityType.StatusChanged,
                     userId
                 );
@@ -81,7 +82,8 @@ public class TicketService : ITicketService
         {
             _ticketHistoryService.AddActivity(
                 ticket.Id,
-                $"Description changed from {oldDescription} to {request.Description}",
+                oldDescription,
+                request.Description,
                 TicketActivityType.DescriptionChanged,
                 userId);
         }
@@ -90,7 +92,8 @@ public class TicketService : ITicketService
         {
             _ticketHistoryService.AddActivity(
                 ticket.Id,
-                $"Title changed from {oldTitle} to {request.Title}",
+                oldTitle, 
+                request.Title,
                 TicketActivityType.TitleChanged, 
                 userId);
         }

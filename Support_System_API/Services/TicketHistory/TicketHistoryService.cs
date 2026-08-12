@@ -18,12 +18,13 @@ public class TicketHistoryService : ITicketHistoryService
     }
     
     
-    public void AddActivity(Guid ticketId, string description, TicketActivityType type, Guid userId)
+    public void AddActivity(Guid ticketId, string oldValue, string newValue, TicketActivityType type, Guid userId)
     {
         var ticketHistory = new DomainTicketHistory
         {
             TicketId = ticketId,
-            Description = description,
+            OldValue = oldValue,
+            NewValue = newValue,
             Type = type,
             CreatedAt = DateTime.UtcNow,
             UserId = userId
@@ -37,11 +38,15 @@ public class TicketHistoryService : ITicketHistoryService
 
         return await _context.TicketHistories
             .Where(t => t.TicketId == ticketId)
+            .Include(t => t.User)
             .Select(t => new TicketHistoryResponse(
+                t.User.Email,
                 t.TicketId, 
                 t.UserId, 
                 t.Type,
-                t.Description
+                t.OldValue,
+                t.NewValue,
+                t.CreatedAt
             ))
             .ToListAsync();
     }

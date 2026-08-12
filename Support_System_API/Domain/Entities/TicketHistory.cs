@@ -15,8 +15,9 @@ public class TicketHistory
     
     public TicketActivityType Type { get; set; }
     
-    [MaxLength(500)]
-    public string? Description { get; set; }
+    public string OldValue { get; set; }
+    
+    public string NewValue { get; set; }
     
     public DateTime CreatedAt { get; set; }
 
